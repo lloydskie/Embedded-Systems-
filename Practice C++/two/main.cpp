@@ -8,6 +8,7 @@ struct User {
 	string cardNumber;
 	string pin;
 	double balance;
+	int rewardsPoints = 0;
 };
 
 vector<User> users;
@@ -16,7 +17,7 @@ void loadUsers() {
 	ifstream fin("users.txt");
 	users.clear();
 	User u;
-	while (fin >> u.cardNumber >> u.pin >> u.balance) {
+	while (fin >> u.cardNumber >> u.pin >> u.balance >> u.rewardsPoints) {
 		users.push_back(u);
 	}
 	fin.close();
@@ -25,7 +26,7 @@ void loadUsers() {
 void saveUsers() {
 	ofstream fout("users.txt");
 	for (const auto& u : users) {
-		fout << u.cardNumber << " " << u.pin << " " << u.balance << endl;
+		fout << u.cardNumber << " " << u.pin << " " << u.balance << " " << u.rewardsPoints << endl;
 	}
 	fout.close();
 }
@@ -63,6 +64,7 @@ void printReceipt(const User& user, const string& transaction, double amount, do
 	cout << "Amount: " << amount << endl;
 	cout << "Current Balance: " << user.balance << endl;
 	cout << "Available Balance: " << user.balance << endl;
+	cout << "Rewards Points: " << user.rewardsPoints << endl;
 	cout << "==============================\n";
 	cout << "Enjoy the convenience of 24/7 banking.\n";
 	cout << "Pay your bills via ATM and earn ATM rewards points!\n";
@@ -88,6 +90,7 @@ void atmMenu(int idx) {
 		switch (choice) {
 			case 1:
 				cout << "Your balance: " << users[idx].balance << endl;
+				cout << "Your ATM Rewards Points: " << users[idx].rewardsPoints << endl;
 				lastTransaction = "Balance Inquiry";
 				lastAmount = 0.0;
 				prevBalance = users[idx].balance;
@@ -99,7 +102,10 @@ void atmMenu(int idx) {
 				if (amt > 0 && amt <= users[idx].balance) {
 					prevBalance = users[idx].balance;
 					users[idx].balance -= amt;
+					int points = static_cast<int>(amt / 100);
+					users[idx].rewardsPoints += points;
 					cout << "Withdrawal successful. New balance: " << users[idx].balance << endl;
+					cout << "You earned " << points << " ATM Rewards Points! Total: " << users[idx].rewardsPoints << endl;
 					lastTransaction = "Withdrawal";
 					lastAmount = amt;
 				} else {
@@ -114,7 +120,10 @@ void atmMenu(int idx) {
 				if (amt > 0) {
 					prevBalance = users[idx].balance;
 					users[idx].balance += amt;
+					int points = static_cast<int>(amt / 100);
+					users[idx].rewardsPoints += points;
 					cout << "Deposit successful. New balance: " << users[idx].balance << endl;
+					cout << "You earned " << points << " ATM Rewards Points! Total: " << users[idx].rewardsPoints << endl;
 					lastTransaction = "Deposit";
 					lastAmount = amt;
 				} else {
@@ -138,7 +147,10 @@ void atmMenu(int idx) {
 					prevBalance = users[idx].balance;
 					users[idx].balance -= amt;
 					users[toIdx].balance += amt;
+					int points = static_cast<int>(amt / 100);
+					users[idx].rewardsPoints += points;
 					cout << "Transfer successful.\n";
+					cout << "You earned " << points << " ATM Rewards Points! Total: " << users[idx].rewardsPoints << endl;
 					lastTransaction = "Fund Transfer";
 					lastAmount = amt;
 				} else {
@@ -153,7 +165,10 @@ void atmMenu(int idx) {
 				if (amt > 0 && amt <= users[idx].balance) {
 					prevBalance = users[idx].balance;
 					users[idx].balance -= amt;
+					int points = static_cast<int>(amt / 100);
+					users[idx].rewardsPoints += points;
 					cout << "Bill payment successful. New balance: " << users[idx].balance << endl;
+					cout << "You earned " << points << " ATM Rewards Points! Total: " << users[idx].rewardsPoints << endl;
 					lastTransaction = "Bill Payment";
 					lastAmount = amt;
 				} else {
@@ -187,6 +202,7 @@ int main() {
 			cin >> newUser.pin;
 			cout << "Enter initial deposit: ";
 			cin >> newUser.balance;
+			newUser.rewardsPoints = static_cast<int>(newUser.balance / 100);
 			users.push_back(newUser);
 			saveUsers();
 			cout << "Account created successfully! Please restart and login.\n";
@@ -214,6 +230,7 @@ int main() {
 			cin >> newUser.pin;
 			cout << "Enter initial deposit: ";
 			cin >> newUser.balance;
+			newUser.rewardsPoints = static_cast<int>(newUser.balance / 100);
 			users.push_back(newUser);
 			saveUsers();
 			cout << "Account created successfully! Please restart and login.\n";
