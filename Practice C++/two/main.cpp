@@ -48,204 +48,268 @@ string getDateTime() {
 	return string(buf);
 }
 
+// ANSI color codes
+#define RESET   "\033[0m"
+#define RED     "\033[31m"
+#define GREEN   "\033[32m"
+#define YELLOW  "\033[33m"
+#define BLUE    "\033[34m"
+#define MAGENTA "\033[35m"
+#define CYAN    "\033[36m"
+#define WHITE   "\033[37m"
+
 void printReceipt(const User& user, const string& transaction, double amount, double prevBalance) {
-	static int receiptNo = 10001; // simple incrementing receipt number
-	cout << "\n==============================\n";
-	cout << "        ATM Transaction Record\n";
-	cout << "Date/Time: " << getDateTime() << endl;
-	cout << "Location: Main Branch\n";
-	cout << "Terminal ID: ATM-001\n";
-	cout << "Receipt No.: " << receiptNo++ << endl;
-	cout << "Card No.: " << user.cardNumber << endl;
-	cout << "Application ID: APP-ATM-2025\n";
-	cout << "Application Label: Debit\n";
-	cout << "Transaction: " << transaction << endl;
-	cout << "From: ATM Machine\n";
-	cout << "Amount: " << amount << endl;
-	cout << "Current Balance: " << user.balance << endl;
-	cout << "Available Balance: " << user.balance << endl;
-	cout << "Rewards Points: " << user.rewardsPoints << endl;
-	cout << "==============================\n";
-	cout << "Enjoy the convenience of 24/7 banking.\n";
-	cout << "Pay your bills via ATM and earn ATM rewards points!\n";
-	cout << "Visit any ATM branch to know more.\n";
-	cout << "==============================\n\n";
+    static int receiptNo = 10001; // simple incrementing receipt number
+    cout << MAGENTA << R"(
+   ___________________________________________
+  /                                           \
+ |           ATM Transaction Record           |
+ |--------------------------------------------|
+ | Date/Time: )" << getDateTime() << R"(           |
+ | Location: Main Branch                      |
+ | Terminal ID: ATM-001                       |
+ | Receipt No.: )" << receiptNo++ << R"(                  |
+ | Card No.: )" << user.cardNumber << R"(                      |
+ | Application ID: APP-ATM-2025               |
+ | Application Label: Debit                   |
+ | Transaction: )" << transaction << R"(                  |
+ | From: ATM Machine                          |
+ | Amount: )" << amount << R"(                              |
+ | Current Balance: )" << user.balance << R"(                  |
+ | Available Balance: )" << user.balance << R"(                |
+ | Rewards Points: )" << user.rewardsPoints << R"(                   |
+ |--------------------------------------------|
+ | Enjoy the convenience of 24/7 banking.     |
+ | Pay your bills via ATM and earn rewards!   |
+ | Visit any ATM branch to know more.         |
+ |____________________________________________|
+    )" << RESET << endl;
 }
 
 void atmMenu(int idx) {
-	int choice;
-	string lastTransaction = "Exit";
-	double lastAmount = 0.0;
-	double prevBalance = users[idx].balance;
-	do {
-		cout << "\nATM Menu:\n";
-		cout << "1. Balance Inquiry\n";
-		cout << "2. Cash Withdrawal\n";
-		cout << "3. Deposit\n";
-		cout << "4. Fund Transfer\n";
-		cout << "5. Bill Payment\n";
-		cout << "6. Exit\n";
-		cout << "Select transaction: ";
-		cin >> choice;
-		switch (choice) {
-			case 1:
-				cout << "Your balance: " << users[idx].balance << endl;
-				cout << "Your ATM Rewards Points: " << users[idx].rewardsPoints << endl;
-				lastTransaction = "Balance Inquiry";
-				lastAmount = 0.0;
-				prevBalance = users[idx].balance;
-				break;
-			case 2: {
-				double amt;
-				cout << "Enter amount to withdraw: ";
-				cin >> amt;
-				if (amt > 0 && amt <= users[idx].balance) {
-					prevBalance = users[idx].balance;
-					users[idx].balance -= amt;
-					int points = static_cast<int>(amt / 100);
-					users[idx].rewardsPoints += points;
-					cout << "Withdrawal successful. New balance: " << users[idx].balance << endl;
-					cout << "You earned " << points << " ATM Rewards Points! Total: " << users[idx].rewardsPoints << endl;
-					lastTransaction = "Withdrawal";
-					lastAmount = amt;
-				} else {
-					cout << "Insufficient balance or invalid amount.\n";
-				}
-				break;
-			}
-			case 3: {
-				double amt;
-				cout << "Enter amount to deposit: ";
-				cin >> amt;
-				if (amt > 0) {
-					prevBalance = users[idx].balance;
-					users[idx].balance += amt;
-					int points = static_cast<int>(amt / 100);
-					users[idx].rewardsPoints += points;
-					cout << "Deposit successful. New balance: " << users[idx].balance << endl;
-					cout << "You earned " << points << " ATM Rewards Points! Total: " << users[idx].rewardsPoints << endl;
-					lastTransaction = "Deposit";
-					lastAmount = amt;
-				} else {
-					cout << "Invalid amount.\n";
-				}
-				break;
-			}
-			case 4: {
-				string toCard;
-				double amt;
-				cout << "Enter recipient card number: ";
-				cin >> toCard;
-				int toIdx = findUser(toCard);
-				if (toIdx == -1) {
-					cout << "Recipient not found.\n";
-					break;
-				}
-				cout << "Enter amount to transfer: ";
-				cin >> amt;
-				if (amt > 0 && amt <= users[idx].balance) {
-					prevBalance = users[idx].balance;
-					users[idx].balance -= amt;
-					users[toIdx].balance += amt;
-					int points = static_cast<int>(amt / 100);
-					users[idx].rewardsPoints += points;
-					cout << "Transfer successful.\n";
-					cout << "You earned " << points << " ATM Rewards Points! Total: " << users[idx].rewardsPoints << endl;
-					lastTransaction = "Fund Transfer";
-					lastAmount = amt;
-				} else {
-					cout << "Insufficient balance or invalid amount.\n";
-				}
-				break;
-			}
-			case 5: {
-				double amt;
-				cout << "Enter bill amount to pay: ";
-				cin >> amt;
-				if (amt > 0 && amt <= users[idx].balance) {
-					prevBalance = users[idx].balance;
-					users[idx].balance -= amt;
-					int points = static_cast<int>(amt / 100);
-					users[idx].rewardsPoints += points;
-					cout << "Bill payment successful. New balance: " << users[idx].balance << endl;
-					cout << "You earned " << points << " ATM Rewards Points! Total: " << users[idx].rewardsPoints << endl;
-					lastTransaction = "Bill Payment";
-					lastAmount = amt;
-				} else {
-					cout << "Insufficient balance or invalid amount.\n";
-				}
-				break;
-			}
-			case 6:
-				cout << "Please collect your card and receipt. Thank you!\n";
-				printReceipt(users[idx], lastTransaction, lastAmount, prevBalance);
-				break;
-			default:
-				cout << "Invalid choice.\n";
-		}
-		saveUsers();
-	} while (choice != 6);
+    int choice;
+    string lastTransaction = "Exit";
+    double lastAmount = 0.0;
+    double prevBalance = users[idx].balance;
+    do {
+        cout << CYAN << "\n+---------------------------------------------+\n";
+        cout << "|                 ATM MENU                   |\n";
+        cout << "+---------------------------------------------+\n";
+        cout << YELLOW;
+        cout << "| 1. Balance Inquiry                        |\n";
+        cout << "| 2. Cash Withdrawal                        |\n";
+        cout << "| 3. Deposit                                |\n";
+        cout << "| 4. Fund Transfer                          |\n";
+        cout << "| 5. Bill Payment                           |\n";
+        cout << "| 6. Exit                                   |\n";
+        cout << "+---------------------------------------------+\n";
+        cout << "| Select transaction:                        |\n";
+        cout << "+---------------------------------------------+\n" << RESET;
+        cin >> choice;
+        switch (choice) {
+            case 1:
+                cout << GREEN << "Your balance: " << users[idx].balance << RESET << endl;
+                cout << MAGENTA << "Your ATM Rewards Points: " << users[idx].rewardsPoints << RESET << endl;
+                lastTransaction = "Balance Inquiry";
+                lastAmount = 0.0;
+                prevBalance = users[idx].balance;
+                break;
+            case 2: {
+                double amt;
+                cout << YELLOW << "Enter amount to withdraw: " << RESET;
+                cin >> amt;
+                if (amt > 0 && amt <= users[idx].balance) {
+                    prevBalance = users[idx].balance;
+                    users[idx].balance -= amt;
+                    int points = static_cast<int>(amt / 100);
+                    users[idx].rewardsPoints += points;
+                    cout << GREEN << "Withdrawal successful. New balance: " << users[idx].balance << RESET << endl;
+                    cout << MAGENTA << "You earned " << points << " ATM Rewards Points! Total: " << users[idx].rewardsPoints << RESET << endl;
+                    lastTransaction = "Withdrawal";
+                    lastAmount = amt;
+                } else {
+                    cout << RED << "Insufficient balance or invalid amount." << RESET << endl;
+                }
+                break;
+            }
+            case 3: {
+                double amt;
+                cout << YELLOW << "Enter amount to deposit: " << RESET;
+                cin >> amt;
+                if (amt > 0) {
+                    prevBalance = users[idx].balance;
+                    users[idx].balance += amt;
+                    int points = static_cast<int>(amt / 100);
+                    users[idx].rewardsPoints += points;
+                    cout << GREEN << "Deposit successful. New balance: " << users[idx].balance << RESET << endl;
+                    cout << MAGENTA << "You earned " << points << " ATM Rewards Points! Total: " << users[idx].rewardsPoints << RESET << endl;
+                    lastTransaction = "Deposit";
+                    lastAmount = amt;
+                } else {
+                    cout << RED << "Invalid amount." << RESET << endl;
+                }
+                break;
+            }
+            case 4: {
+                string toCard;
+                double amt;
+                cout << YELLOW << "Enter recipient card number: " << RESET;
+                cin >> toCard;
+                int toIdx = findUser(toCard);
+                if (toIdx == -1) {
+                    cout << RED << "Recipient not found." << RESET << endl;
+                    break;
+                }
+                cout << YELLOW << "Enter amount to transfer: " << RESET;
+                cin >> amt;
+                if (amt > 0 && amt <= users[idx].balance) {
+                    prevBalance = users[idx].balance;
+                    users[idx].balance -= amt;
+                    users[toIdx].balance += amt;
+                    int points = static_cast<int>(amt / 100);
+                    users[idx].rewardsPoints += points;
+                    cout << GREEN << "Transfer successful." << RESET << endl;
+                    cout << MAGENTA << "You earned " << points << " ATM Rewards Points! Total: " << users[idx].rewardsPoints << RESET << endl;
+                    lastTransaction = "Fund Transfer";
+                    lastAmount = amt;
+                } else {
+                    cout << RED << "Insufficient balance or invalid amount." << RESET << endl;
+                }
+                break;
+            }
+            case 5: {
+                double amt;
+                cout << YELLOW << "Enter bill amount to pay: " << RESET;
+                cin >> amt;
+                if (amt > 0 && amt <= users[idx].balance) {
+                    prevBalance = users[idx].balance;
+                    users[idx].balance -= amt;
+                    int points = static_cast<int>(amt / 100);
+                    users[idx].rewardsPoints += points;
+                    cout << GREEN << "Bill payment successful. New balance: " << users[idx].balance << RESET << endl;
+                    cout << MAGENTA << "You earned " << points << " ATM Rewards Points! Total: " << users[idx].rewardsPoints << RESET << endl;
+                    lastTransaction = "Bill Payment";
+                    lastAmount = amt;
+                } else {
+                    cout << RED << "Insufficient balance or invalid amount." << RESET << endl;
+                }
+                break;
+            }
+            case 6:
+                cout << GREEN << "Please collect your card and receipt. Thank you!" << RESET << endl;
+                printReceipt(users[idx], lastTransaction, lastAmount, prevBalance);
+                break;
+            default:
+                cout << RED << "Invalid choice." << RESET << endl;
+        }
+        saveUsers();
+    } while (choice != 6);
 }
 
 int main() {
 	loadUsers();
-	cout << "Welcome to the ATM Machine!\n";
-	if (users.empty()) {
-		cout << "No users found. Would you like to create a new bank account? (y/n): ";
-		char ch;
-		cin >> ch;
-		if (ch == 'y' || ch == 'Y') {
-			User newUser;
-			cout << "Enter new card number: ";
-			cin >> newUser.cardNumber;
-			cout << "Set your PIN: ";
-			cin >> newUser.pin;
-			cout << "Enter initial deposit: ";
-			cin >> newUser.balance;
-			newUser.rewardsPoints = static_cast<int>(newUser.balance / 100);
-			users.push_back(newUser);
-			saveUsers();
-			cout << "Account created successfully! Please restart and login.\n";
-		} else {
-			cout << "Exiting.\n";
-		}
-		return 0;
-	}
+	// 3D ASCII Art ATM Welcome with color
+	cout << CYAN << R"(
+   ___________________________________________
+  /                                           \
+ |   _____   _______   __  __   _____   _____  |
+ |  |  _  | |__   __| |  \/  | |  _  | |  _  | |
+ |  | |_| |    | |    | |\/| | | |_| | | |_| | |
+ |  |  _  |    | |    | |  | | |  _  | |  _  | |
+ |  | | | |    | |    | |  | | | | | | | | | | |
+ |  |_| |_|    |_|    |_|  |_| |_| |_| |_| |_| |
+ |                                             |
+ |         WELCOME TO ATM MACHINE              |
+ |_____________________________________________|
+    )" << RESET << endl;
 
-	string cardNumber, pin;
-	cout << "Insert your card (enter card number): ";
-	cin >> cardNumber;
-	int idx = findUser(cardNumber);
-	if (idx == -1) {
-		cout << "Card not recognized.\n";
-		cout << "1. Register as a new user\n";
-		cout << "2. Exit the system\n";
-		cout << "Select an option: ";
-		int choice;
-		cin >> choice;
-		if (choice == 1) {
-			User newUser;
-			newUser.cardNumber = cardNumber;
-			cout << "Set your PIN: ";
-			cin >> newUser.pin;
-			cout << "Enter initial deposit: ";
-			cin >> newUser.balance;
-			newUser.rewardsPoints = static_cast<int>(newUser.balance / 100);
-			users.push_back(newUser);
-			saveUsers();
-			cout << "Account created successfully! Please restart and login.\n";
-		} else {
-			cout << "Exiting.\n";
-		}
-		return 0;
-	}
-	cout << "Enter PIN: ";
-	cin >> pin;
-	if (users[idx].pin != pin) {
-		cout << "Incorrect PIN.\n";
-		return 0;
-	}
-	atmMenu(idx);
-	return 0;
+    if (users.empty()) {
+        cout << YELLOW << "\n+---------------------------------------------+\n";
+        cout << "| No users found. Would you like to create   |\n";
+        cout << "| a new bank account? (y/n):                |\n";
+        cout << "+---------------------------------------------+\n" << RESET;
+        char ch;
+        cin >> ch;
+        if (ch == 'y' || ch == 'Y') {
+            User newUser;
+            cout << YELLOW << "\n+---------------------------------------------+\n";
+            cout << "| Enter new card number:                    |\n";
+            cout << "+---------------------------------------------+\n" << RESET;
+            cin >> newUser.cardNumber;
+            cout << YELLOW << "\n+---------------------------------------------+\n";
+            cout << "| Set your PIN:                             |\n";
+            cout << "+---------------------------------------------+\n" << RESET;
+            cin >> newUser.pin;
+            cout << YELLOW << "\n+---------------------------------------------+\n";
+            cout << "| Enter initial deposit:                    |\n";
+            cout << "+---------------------------------------------+\n" << RESET;
+            cin >> newUser.balance;
+            newUser.rewardsPoints = static_cast<int>(newUser.balance / 100);
+            users.push_back(newUser);
+            saveUsers();
+            cout << GREEN << "\n+---------------------------------------------+\n";
+            cout << "| Account created successfully!              |\n";
+            cout << "| Please restart and login.                  |\n";
+            cout << "+---------------------------------------------+\n" << RESET;
+        } else {
+            cout << RED << "\n+---------------------------------------------+\n";
+            cout << "| Exiting.                                  |\n";
+            cout << "+---------------------------------------------+\n" << RESET;
+        }
+        return 0;
+    }
+
+    string cardNumber, pin;
+    cout << YELLOW << "\n+---------------------------------------------+\n";
+    cout << "| Insert your card (enter card number):      |\n";
+    cout << "+---------------------------------------------+\n" << RESET;
+    cin >> cardNumber;
+    int idx = findUser(cardNumber);
+    if (idx == -1) {
+        cout << RED << "\n+---------------------------------------------+\n";
+        cout << "| Card not recognized.                      |\n";
+        cout << "| 1. Register as a new user                 |\n";
+        cout << "| 2. Exit the system                        |\n";
+        cout << "| Select an option:                         |\n";
+        cout << "+---------------------------------------------+\n" << RESET;
+        int choice;
+        cin >> choice;
+        if (choice == 1) {
+            User newUser;
+            newUser.cardNumber = cardNumber;
+            cout << YELLOW << "\n+---------------------------------------------+\n";
+            cout << "| Set your PIN:                             |\n";
+            cout << "+---------------------------------------------+\n" << RESET;
+            cin >> newUser.pin;
+            cout << YELLOW << "\n+---------------------------------------------+\n";
+            cout << "| Enter initial deposit:                    |\n";
+            cout << "+---------------------------------------------+\n" << RESET;
+            cin >> newUser.balance;
+            newUser.rewardsPoints = static_cast<int>(newUser.balance / 100);
+            users.push_back(newUser);
+            saveUsers();
+            cout << GREEN << "\n+---------------------------------------------+\n";
+            cout << "| Account created successfully!              |\n";
+            cout << "| Please restart and login.                  |\n";
+            cout << "+---------------------------------------------+\n" << RESET;
+        } else {
+            cout << RED << "\n+---------------------------------------------+\n";
+            cout << "| Exiting.                                  |\n";
+            cout << "+---------------------------------------------+\n" << RESET;
+        }
+        return 0;
+    }
+    cout << YELLOW << "\n+---------------------------------------------+\n";
+    cout << "| Enter PIN:                                |\n";
+    cout << "+---------------------------------------------+\n" << RESET;
+    cin >> pin;
+    if (users[idx].pin != pin) {
+        cout << RED << "\n+---------------------------------------------+\n";
+        cout << "| Incorrect PIN.                            |\n";
+        cout << "+---------------------------------------------+\n" << RESET;
+        return 0;
+    }
+    atmMenu(idx);
+    return 0;
 }
 
